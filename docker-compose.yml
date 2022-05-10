@@ -1,0 +1,56 @@
+version: '3.8'
+
+services:
+  touragency-db:
+    image: mysql
+    platform: linux/x86_64
+    restart: always
+    environment:
+      MYSQL_USER: 'marina'
+      MYSQL_PASSWORD: 'q1w2e3'
+      MYSQL_DATABASE: 'touragency_db'
+      MYSQL_ROOT_PASSWORD: 'root'
+      LANG: C.UTF-8
+    container_name: touragency_db
+    hostname: touragency_db
+    networks:
+      touragency_network:
+        aliases:
+          - database
+    ports:
+      - "3307:3306"
+    volumes:
+      - ./database/startup_scripts:/docker-entrypoint-initdb.d
+      - ./database/data:/var/lib/mysql
+    command: --default-authentication-plugin=mysql_native_password --character-set-server=utf8mb4 --collation-server=utf8mb4_unicode_ci 
+
+  touragency-redis:
+    image: redis
+    container_name: dbredis
+    hostname: dbredis
+    networks:
+      touragency_network:
+        aliases:
+          - dbredis
+    ports:
+      - 6379:6379
+
+  touragency:
+    container_name: touragency
+    hostname: touragency
+    depends_on:
+      - touragency-db
+      - touragency-redis
+    build:
+      context: .    
+    networks:
+      - touragency_network
+    ports:
+      - 1323:1323
+    deploy:
+      restart_policy:
+        condition: on-failure
+
+networks:
+  touragency_network:
+    driver: bridge

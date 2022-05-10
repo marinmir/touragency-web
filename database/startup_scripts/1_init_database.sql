@@ -1,0 +1,70 @@
+USE touragency_db;
+
+ALTER DATABASE touragency_db CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
+
+CREATE TABLE IF NOT EXISTS travel_agencies (
+	id INT NOT NULL AUTO_INCREMENT PRIMARY KEY,
+	name NVARCHAR(50) NOT NULL,
+	address NVARCHAR(200) NOT NULL
+) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
+
+CREATE TABLE IF NOT EXISTS human (
+	id INT NOT NULL AUTO_INCREMENT PRIMARY KEY,
+	name VARCHAR(20) NOT NULL,
+	surname VARCHAR(30) NOT NULL,
+	birthday DATE NOT NULL
+);
+
+CREATE TABLE IF NOT EXISTS tour_client (
+	id INT NOT NULL AUTO_INCREMENT PRIMARY KEY,
+	id_human INT NOT NULL,
+	FOREIGN KEY (id_human) REFERENCES human(id) ON DELETE CASCADE
+);
+
+CREATE TABLE IF NOT EXISTS tourmanager (
+	id INT NOT NULL AUTO_INCREMENT PRIMARY KEY,
+	id_human INT NOT NULL,
+	id_travel_agency INT NOT NULL,
+	FOREIGN KEY (id_human) REFERENCES human(id) ON DELETE CASCADE,
+	FOREIGN KEY (id_travel_agency) REFERENCES travel_agencies(id) ON DELETE CASCADE
+);
+
+CREATE TABLE IF NOT EXISTS tour_operator (
+	id INT NOT NULL AUTO_INCREMENT PRIMARY KEY,
+	name VARCHAR(30) NOT NULL
+) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
+
+CREATE TABLE IF NOT EXISTS countries (
+	id INT NOT NULL AUTO_INCREMENT PRIMARY KEY,
+	name VARCHAR(50)
+);
+
+CREATE TABLE IF NOT EXISTS aviatickets (
+	id INT NOT NULL AUTO_INCREMENT PRIMARY KEY,
+	price DECIMAL NOT NULL,
+	one_way BOOLEAN NOT NULL,
+	ticket_class ENUM ('business, econom') NOT NULL
+);
+
+CREATE TABLE IF NOT EXISTS hotel_bookings (
+	id INT NOT NULL AUTO_INCREMENT PRIMARY KEY,
+	date_start DATETIME NOT NULL,
+	date_end DATETIME NOT NULL,
+	price DECIMAL NOT NULL
+);
+
+CREATE TABLE IF NOT EXISTS tour (
+	id INT NOT NULL AUTO_INCREMENT PRIMARY KEY,
+	id_client INT NOT NULL,
+	id_manager INT NOT NULL,
+	id_tour_operator INT NOT NULL,
+	id_country INT NOT NULL,
+	id_aviaticket INT NOT NULL,
+	id_hotel_booking INT NOT NULL,
+	FOREIGN KEY (id_client) REFERENCES tour_client(id) ON DELETE CASCADE,
+	FOREIGN KEY (id_manager) REFERENCES tourmanager(id) ON DELETE CASCADE,
+	FOREIGN KEY (id_tour_operator) REFERENCES tour_operator(id) ON DELETE CASCADE,
+	FOREIGN KEY (id_country) REFERENCES countries(id) ON DELETE CASCADE,
+	FOREIGN KEY (id_aviaticket) REFERENCES aviatickets(id) ON DELETE CASCADE,
+	FOREIGN KEY (id_hotel_booking) REFERENCES hotel_bookings(id) ON DELETE CASCADE
+);
