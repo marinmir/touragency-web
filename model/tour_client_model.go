@@ -15,7 +15,7 @@ type TourClientDb struct {
 }
 
 type TourClientModel interface {
-	Add(name string, surname string, birthday string) (error)
+	Add(name string, surname string, birthday string) (*TourClientDb, error)
 	Get(id int) (*TourClientDb, error)
 	GetList(limit int, offset int) ([]TourClientDb, error)
 	Update(tourClient TourClientDb) (error)
@@ -30,23 +30,33 @@ func InitTourClientModel(db *sql.DB) TourClientModel {
 	return tourClientModelImpl { database: db }
 }
 
-func (m tourClientModelImpl) Add(name string, surname string, birthday string) (error) {
+func (m tourClientModelImpl) Add(name string, surname string, birthday string) (*TourClientDb, error) {
 	parsedBirthday, err := time.Parse("2006-01-02", birthday)
 	if err != nil {
-		return err
+		return nil, err
 	}
 	res, err := m.database.Exec("INSERT INTO human(name, surname, birthday) VALUES (?, ?, ?)", name, surname, parsedBirthday)
 	if err != nil {
-		return err
+		return nil, err
 	}
 	
 	humanId, err := res.LastInsertId()
 	if err != nil {
-		return err
+		return nil, err
 	}
-	_, err = m.database.Exec("INSERT INTO tour_client(id_human) VALUES (?)", humanId)
+	result, err := m.database.Exec("INSERT INTO tour_client(id_human) VALUES (?)", humanId)
+	if err != nil {
+		return nil, err
+	}
 
-	return err
+	insertId, err := result.LastInsertId()
+
+	return &TourClientDb {
+		Id: int(insertId),
+		Name: name,
+		Surname: surname,
+		Birthday: birthday,
+	}, nil
 }
 
 func (m tourClientModelImpl) Get(id int) (*TourClientDb, error) {

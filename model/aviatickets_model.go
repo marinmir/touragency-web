@@ -36,7 +36,7 @@ type AviaticketDb struct {
 }
 
 type AviaticketModel interface {
-	Add(price float32, oneWay bool, class TicketClass) (error)
+	Add(price float32, oneWay bool, class TicketClass) (*AviaticketDb, error)
 	Get(id int) (*AviaticketDb, error)
 	GetList(limit int, offset int) ([]AviaticketDb, error)
 	Update(aviaticket AviaticketDb) (error)
@@ -51,10 +51,20 @@ func InitAviaticketModel(db *sql.DB) AviaticketModel {
 	return aviaticketModelImpl { database: db }
 }
 
-func (m aviaticketModelImpl) Add(price float32, oneWay bool, class TicketClass) (error) {
-	_, err := m.database.Exec("INSERT INTO aviatickets(price, one_way, ticket_class) VALUES (?, ?, ?)", price, oneWay, class)
+func (m aviaticketModelImpl) Add(price float32, oneWay bool, class TicketClass) (*AviaticketDb, error) {
+	res, err := m.database.Exec("INSERT INTO aviatickets(price, one_way, ticket_class) VALUES (?, ?, ?)", price, oneWay, class)
+	if err != nil {
+		return nil, err
+	}
 
-	return err
+	insertId, err := res.LastInsertId()
+
+	return &AviaticketDb {
+		Id: int(insertId),
+		Price: price,
+		OneWay: oneWay,
+		Class: class,
+	}, nil
 }
 
 func (m aviaticketModelImpl) Get(id int) (*AviaticketDb, error) {

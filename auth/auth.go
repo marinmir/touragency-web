@@ -20,6 +20,11 @@ type User struct {
  	Password string `json:"password"`
 }
 
+type UserNetwork struct {
+ 	Username string `json:"username"`
+ 	Password string `json:"password"`
+}
+
 type TokenDetails struct {
   AccessToken  string
   RefreshToken string
@@ -57,7 +62,7 @@ func HandleAuth(next echo.HandlerFunc) echo.HandlerFunc {
 }
 
 func Login(context echo.Context) error {
-	u := new(User)
+	u := new(UserNetwork)
 
 	if err := context.Bind(u); err != nil {
 		return echo.NewHTTPError(http.StatusBadRequest, err.Error())

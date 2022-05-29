@@ -14,6 +14,10 @@ type TravelAgency struct {
 	Address string `json:"address"`
 }
 
+type TravelAgenciesResponse struct {
+	TravelAgencies []TravelAgency `json:"travel_agencies"`
+}
+
 type getTravelAgenciesParams struct {
 	Offset int `query:"offset"`
 	Limit int `query:"limit"`
@@ -54,7 +58,7 @@ func GetList(context echo.Context, travelAgenciesModel model.TravelAgencyModel) 
 		result = append(result, taItem)
 	}
 
-	return context.JSON(http.StatusOK, result)
+	return context.JSON(http.StatusOK, TravelAgenciesResponse { TravelAgencies: result })
 }
 
 func Get(context echo.Context, travelAgenciesModel model.TravelAgencyModel) error {

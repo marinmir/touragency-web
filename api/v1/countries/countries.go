@@ -18,6 +18,10 @@ type getCountriesParams struct {
 	Limit int `query:"limit"`
 }
 
+type getCountriesResponse struct {
+	Countries []Country `json:"countries"`
+}
+
 type getCountryParams struct {
 	Id int `query:"id"`
 }
@@ -52,7 +56,9 @@ func GetList(context echo.Context, countriesModel model.CountryModel) error {
 		result = append(result, cItem)
 	}
 
-	return context.JSON(http.StatusOK, result)
+	return context.JSON(http.StatusOK, getCountriesResponse {
+		Countries: result,
+	})
 }
 
 func Get(context echo.Context, countriesModel model.CountryModel) error {

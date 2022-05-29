@@ -15,7 +15,7 @@ type HotelBookingDb struct {
 }
 
 type HotelBookingModel interface {
-	Add(dateStart string, dateEnd string, price float32) (error)
+	Add(dateStart string, dateEnd string, price float32) (*HotelBookingDb, error)
 	Get(id int) (*HotelBookingDb, error)
 	GetList(limit int, offset int) ([]HotelBookingDb, error)
 	Update(tourClient HotelBookingDb) (error)
@@ -27,28 +27,40 @@ type hotelBookingModelImpl struct {
 }
 
 const (
-	dateTemplate string = "2006-01-02 15:04:05"
+	dateTemplate string = "2006-01-02"
 )
 
 func InitHotelBookingModel(db *sql.DB) HotelBookingModel {
 	return hotelBookingModelImpl { database: db }
 }
 
-func (m hotelBookingModelImpl) Add(dateStart string, dateEnd string, price float32) (error) {
+func (m hotelBookingModelImpl) Add(dateStart string, dateEnd string, price float32) (*HotelBookingDb, error) {
 	parsedDateStart, err := time.Parse(dateTemplate, dateStart)
 	if err != nil {
-		return err
+		return nil, err
 	}
 
 	parsedDateEnd, err := time.Parse(dateTemplate, dateEnd)
 	if err != nil {
-		return err
+		return nil, err
 	}
 
-	_, err = m.database.Exec("INSERT INTO hotel_bookings(date_start, date_end, price) VALUES (?, ?, ?)", parsedDateStart, parsedDateEnd, price)
+	res, err := m.database.Exec("INSERT INTO hotel_bookings(date_start, date_end, price) VALUES (?, ?, ?)", parsedDateStart, parsedDateEnd, price)
+	if err != nil {
+		return nil, err
+	}
 
+	insertId, err := res.LastInsertId()
+	if err != nil {
+		return nil, err
+	}
 
-	return err
+	return &HotelBookingDb {
+		Id: int(insertId),
+		DateStart: dateStart,
+		DateEnd: dateEnd,
+		Price: price,
+	}, nil
 }
 
 func (m hotelBookingModelImpl) Get(id int) (*HotelBookingDb, error) {

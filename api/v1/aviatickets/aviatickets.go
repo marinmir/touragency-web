@@ -25,9 +25,9 @@ type getAviaticketParams struct {
 }
 
 type addAviaticketParams struct {
-	Price int `query:"price"`
-	OneWay bool `query:"one_way"`
-	TicketClass string `query:"ticket_class"`
+	Price int `query:"price" form:"price" json:"price"`
+	OneWay bool `query:"one_way" form:"one_way" json:"one_way"`
+	TicketClass string `query:"ticket_class" form:"ticket_class" json:"ticket_class"`
 }
 
 type deleteAviaticketParams struct {
@@ -79,12 +79,17 @@ func Add(context echo.Context, aviaticketsModel model.AviaticketModel) error {
 		return echo.NewHTTPError(http.StatusBadRequest, err.Error())
 	}
 
-	err := aviaticketsModel.Add(float32(queryParams.Price) / 100, queryParams.OneWay, model.TicketClass(queryParams.TicketClass))
+	aviaticket, err := aviaticketsModel.Add(float32(queryParams.Price) / 100, queryParams.OneWay, model.TicketClass(queryParams.TicketClass))
 	if err != nil {
 		return echo.NewHTTPError(http.StatusInternalServerError, err.Error())
 	}
 
-	return context.NoContent(http.StatusCreated)
+	return context.JSON(http.StatusCreated, Aviaticket {
+		Id: aviaticket.Id,
+		Price: queryParams.Price,
+		OneWay: queryParams.OneWay,
+		TicketClass: queryParams.TicketClass,
+	})
 }
 
 func Update(context echo.Context, aviaticketsModel model.AviaticketModel) error {

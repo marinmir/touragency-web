@@ -25,9 +25,9 @@ type getHotelBookingParams struct {
 }
 
 type addHotelBookingParams struct {
-	DateStart string `query:"date_start"`
-	DateEnd string `query:"date_end"`
-	Price int `query:"price"`
+	DateStart string `query:"date_start" form:"date_start" json:"date_start"`
+	DateEnd string `query:"date_end" form:"date_end" json:"date_end"`
+	Price int `query:"price" form:"price" json:"price"`
 }
 
 type deleteHotelBookingParams struct {
@@ -79,12 +79,17 @@ func Add(context echo.Context, hotelBookingsModel model.HotelBookingModel) error
 		return echo.NewHTTPError(http.StatusBadRequest, err.Error())
 	}
 
-	err := hotelBookingsModel.Add(queryParams.DateStart, queryParams.DateEnd, float32(queryParams.Price) / 100)
+	hb, err := hotelBookingsModel.Add(queryParams.DateStart, queryParams.DateEnd, float32(queryParams.Price) / 100)
 	if err != nil {
 		return echo.NewHTTPError(http.StatusInternalServerError, err.Error())
 	}
 
-	return context.NoContent(http.StatusCreated)
+	return context.JSON(http.StatusCreated, HotelBooking {
+		Id: hb.Id,
+		DateStart: hb.DateStart,
+		DateEnd: hb.DateEnd,
+		Price: queryParams.Price,
+	})
 }
 
 func Update(context echo.Context, hotelBookingsModel model.HotelBookingModel) error {

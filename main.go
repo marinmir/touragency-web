@@ -17,12 +17,17 @@ import (
 	"touragency/api/v1/tour_managers"
 	"touragency/api/v1/aviatickets"
 	"touragency/api/v1/hotel_bookings"
+	"touragency/api/v1/tours"
 )
 
 func main() {
 	server := echo.New()
 
 	server.Use(middleware.Logger())
+	server.Use(middleware.CORSWithConfig(middleware.CORSConfig {
+		AllowOrigins: []string{"*"},
+		AllowHeaders: []string{echo.HeaderOrigin, echo.HeaderContentType, echo.HeaderAccept, echo.HeaderAuthorization},
+	}))
 
 	server.POST("/login", auth.Login)
 
@@ -34,9 +39,11 @@ func main() {
 	initTravelAgenciesRoutes(server, db)
 	initCountriesRoutes(server, db)
 	initTourOperatorsRoutes(server, db)
+	initAviaticketsRoutes(server, db)
 	initTourClientsRoutes(server, db)
 	initTourManagersRoutes(server, db)
 	initHotelBookingsRoutes(server, db)
+	initToursRoutes(server, db)
 
 	server.Logger.Fatal(server.Start(":1323"))
 }
@@ -121,32 +128,33 @@ func initTourClientsRoutes(server *echo.Echo, database *sql.DB) {
 		return tour_clients.GetList(context, tourClientsModel)
 	}))
 
-	server.GET("/tour_operator", auth.HandleAuth(func (context echo.Context) error {
+	server.GET("/tour_client", auth.HandleAuth(func (context echo.Context) error {
 		return tour_clients.Get(context, tourClientsModel)
 	}))
 
-	server.PATCH("/tour_operator", auth.HandleAuth(func (context echo.Context) error {
+	server.PATCH("/tour_client", auth.HandleAuth(func (context echo.Context) error {
 		return tour_clients.Update(context, tourClientsModel)
 	}))
 
-	server.POST("/tour_operator", auth.HandleAuth(func (context echo.Context) error {
+	server.POST("/tour_client", auth.HandleAuth(func (context echo.Context) error {
 		return tour_clients.Add(context, tourClientsModel)
 	}))
 
-	server.DELETE("/tour_operator", auth.HandleAuth(func (context echo.Context) error {
+	server.DELETE("/tour_client", auth.HandleAuth(func (context echo.Context) error {
 		return tour_clients.Delete(context, tourClientsModel)
 	}))
 }
 
 func initTourManagersRoutes(server *echo.Echo, database *sql.DB) {
 	tourManagersModel := model.InitTourManagerModel(database)
+	travelAgenciesModel := model.InitTravelAgencyModel(database)
 
 	server.GET("/tour_managers", auth.HandleAuth(func (context echo.Context) error {
-		return tour_managers.GetList(context, tourManagersModel)
+		return tour_managers.GetList(context, tourManagersModel, travelAgenciesModel)
 	}))
 
 	server.GET("/tour_manager", auth.HandleAuth(func (context echo.Context) error {
-		return tour_managers.Get(context, tourManagersModel)
+		return tour_managers.Get(context, tourManagersModel, travelAgenciesModel)
 	}))
 
 	server.PATCH("/tour_manager", auth.HandleAuth(func (context echo.Context) error {
@@ -207,5 +215,17 @@ func initHotelBookingsRoutes(server *echo.Echo, database *sql.DB) {
 
 	server.DELETE("/hotel_booking", auth.HandleAuth(func (context echo.Context) error {
 		return hotel_bookings.Delete(context, hotelBookingsModel)
+	}))
+}
+
+func initToursRoutes(server *echo.Echo, database *sql.DB) {
+	toursModel := model.InitTourModel(database)
+
+	server.POST("/tour", auth.HandleAuth(func (context echo.Context) error {
+		return tours.Add(context, toursModel)
+	}))
+
+	server.DELETE("/tour", auth.HandleAuth(func (context echo.Context) error {
+		return tours.Delete(context, toursModel)
 	}))
 }

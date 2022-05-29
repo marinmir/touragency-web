@@ -43,7 +43,7 @@ CREATE TABLE IF NOT EXISTS aviatickets (
 	id INT NOT NULL AUTO_INCREMENT PRIMARY KEY,
 	price DECIMAL NOT NULL,
 	one_way BOOLEAN NOT NULL,
-	ticket_class ENUM ('business, econom') NOT NULL
+	ticket_class ENUM ('business', 'econom') NOT NULL
 );
 
 CREATE TABLE IF NOT EXISTS hotel_bookings (

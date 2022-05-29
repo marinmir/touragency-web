@@ -29,6 +29,8 @@ replace touragency/api/v1/aviatickets => ./api/v1/aviatickets
 
 replace touragency/api/v1/hotel_bookings => ./api/v1/hotel_bookings
 
+replace touragency/api/v1/tours => ./api/v1/tours
+
 require (
 	github.com/dgrijalva/jwt-go v3.2.0+incompatible // indirect
 	github.com/go-sql-driver/mysql v1.6.0 // indirect
@@ -53,6 +55,7 @@ require (
 	touragency/api/v1/tour_clients v0.0.0-00010101000000-000000000000 // indirect
 	touragency/api/v1/tour_managers v0.0.0-00010101000000-000000000000 // indirect
 	touragency/api/v1/tour_operators v0.0.0-00010101000000-000000000000 // indirect
+	touragency/api/v1/tours v0.0.0-00010101000000-000000000000 // indirect
 	touragency/api/v1/travel_agencies v0.0.0-00010101000000-000000000000 // indirect
 	touragency/cache v0.0.0-00010101000000-000000000000 // indirect
 	touragency/db v0.0.0-00010101000000-000000000000 // indirect

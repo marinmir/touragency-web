@@ -79,12 +79,17 @@ func Add(context echo.Context, tourClientsModel model.TourClientModel) error {
 		return echo.NewHTTPError(http.StatusBadRequest, err.Error())
 	}
 
-	err := tourClientsModel.Add(queryParams.Name, queryParams.Surname, queryParams.Birthday)
+	client, err := tourClientsModel.Add(queryParams.Name, queryParams.Surname, queryParams.Birthday)
 	if err != nil {
 		return echo.NewHTTPError(http.StatusInternalServerError, err.Error())
 	}
 
-	return context.NoContent(http.StatusCreated)
+	return context.JSON(http.StatusCreated, TourClient {
+		Id: client.Id,
+		Name: client.Name,
+		Surname: client.Surname,
+		Birthday: client.Birthday,
+	})
 }
 
 func Update(context echo.Context, tourClientsModel model.TourClientModel) error {

@@ -13,6 +13,10 @@ type TourOperator struct {
 	Name string `json:"name"`
 }
 
+type TourOperatorsResponse struct {
+	TourOperators []TourOperator `json:"tour_operators"`
+}
+
 type getTourOperatorsParams struct {
 	Offset int `query:"offset"`
 	Limit int `query:"limit"`
@@ -23,7 +27,7 @@ type getTourOperatorParams struct {
 }
 
 type addTourOperatorParams struct {
-	Name string `query:"name"`
+	Name string `json:"name"`
 }
 
 type deleteTourOperatorParams struct {
@@ -52,7 +56,7 @@ func GetList(context echo.Context, tourOperatorsModel model.TourOperatorModel) e
 		result = append(result, toItem)
 	}
 
-	return context.JSON(http.StatusOK, result)
+	return context.JSON(http.StatusOK, TourOperatorsResponse { TourOperators: result })
 }
 
 func Get(context echo.Context, tourOperatorsModel model.TourOperatorModel) error {

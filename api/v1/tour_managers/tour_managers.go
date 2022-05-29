@@ -11,9 +11,14 @@ import (
 type TourManager struct {
 	Id int `json:"id"`
 	TravelAgencyId int `json:"id_travel_agency"`
+	TravelAgency string `json:"travel_agency"`
 	Name string `json:"name"`
 	Surname string `json:"surname"`
 	Birthday string `json:"birthday"`
+}
+
+type TourManagersResponse struct {
+	Managers []TourManager `json:"managers"`
 }
 
 type getTourManagersParams struct {
@@ -26,17 +31,17 @@ type getTourManagerParams struct {
 }
 
 type addTourManagerParams struct {
-	TravelAgencyId int `query:"id_travel_agency"`
-	Name string `query:"name"`
-	Surname string `query:"surname"`
-	Birthday string `query:"birthday"`
+	TravelAgencyId int `json:"id_travel_agency" form:"id_travel_agency" query:"id_travel_agency"`
+	Name string `json:"name" form:"name" query:"name"`
+	Surname string `json:"surname" form:"surname" query:"surname"`
+	Birthday string `json:"birthday" form:"birthday" query:"birthday"`
 }
 
 type deleteTourManagerParams struct {
 	Id int `query:"id"`
 }
 
-func GetList(context echo.Context, tourManagersModel model.TourManagerModel) error {
+func GetList(context echo.Context, tourManagersModel model.TourManagerModel, travelAgenciesModel model.TravelAgencyModel) error {
 	queryParams := new(getTourManagersParams)
 	if err := context.Bind(queryParams); err != nil {
 		return echo.NewHTTPError(http.StatusBadRequest, err.Error())
@@ -54,15 +59,26 @@ func GetList(context echo.Context, tourManagersModel model.TourManagerModel) err
 	var result []TourManager
 
 	for _, manager := range tourManagers {
-		var managerItem = TourManager { Id: manager.Id, TravelAgencyId: manager.TravelAgencyId, Name: manager.Name, Surname: manager.Surname, Birthday: manager.Birthday }
+		travelAgency, _ := travelAgenciesModel.Get(manager.TravelAgencyId)
+		var managerItem = TourManager { 
+			Id: manager.Id, 
+			TravelAgencyId: manager.TravelAgencyId, 
+			TravelAgency: travelAgency.Name, 
+			Name: manager.Name, 
+			Surname: manager.Surname, 
+			Birthday: manager.Birthday, 
+		}
 		result = append(result, managerItem)
 	}
 
-	return context.JSON(http.StatusOK, result)
+	return context.JSON(http.StatusOK, TourManagersResponse {
+		Managers: result,
+	})
 }
 
-func Get(context echo.Context, tourManagersModel model.TourManagerModel) error {
+func Get(context echo.Context, tourManagersModel model.TourManagerModel, travelAgenciesModel model.TravelAgencyModel) error {
 	queryParams := new(getTourManagerParams)
+
 	if err := context.Bind(queryParams); err != nil {
 		return echo.NewHTTPError(http.StatusBadRequest, err.Error())
 	}
@@ -71,8 +87,19 @@ func Get(context echo.Context, tourManagersModel model.TourManagerModel) error {
 	if err != nil {
 		return echo.NewHTTPError(http.StatusInternalServerError, err.Error())
 	}
+	travelAgency, err := travelAgenciesModel.Get(tourManager.TravelAgencyId)
+	if err != nil {
+		return echo.NewHTTPError(http.StatusInternalServerError, err.Error())
+	}
 
-	return context.JSON(http.StatusOK, tourManager)
+	return context.JSON(http.StatusOK, TourManager {
+		Id: tourManager.Id,
+		TravelAgencyId: tourManager.TravelAgencyId,
+		TravelAgency: travelAgency.Name,
+		Name: tourManager.Name,
+		Surname: tourManager.Surname,
+		Birthday: tourManager.Birthday,
+	})
 }
 
 func Add(context echo.Context, tourManagersModel model.TourManagerModel) error {
