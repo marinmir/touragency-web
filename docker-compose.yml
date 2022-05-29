@@ -1,6 +1,17 @@
 version: '3.8'
 
 services:
+  touragency-web-admin:
+    build:
+     context: ./frontend
+    container_name: touragency-web-admin
+    networks:
+     touragency_network:
+       aliases:
+        - touragency-web-admin
+    ports:
+     - "9090:9090"
+
   touragency-db:
     image: mysql
     platform: linux/x86_64
